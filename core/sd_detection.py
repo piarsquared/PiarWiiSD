@@ -1,59 +1,13 @@
 import os
 import platform
 import subprocess
+import json
 from colorama import init, Fore
-init(autoreset = True)
 
-currentOS = platform.system()
+# Initialize colorama for cross-platform colored output
+init(autoreset=True)
 
 EXPECTED_WII_DIRS = ["apps", "private", "wads"]
-
-def detect_sd_cards():
-    sd_cards = []
-
-    if currentOS != "Windows":
-        print("Only Windows SD card detection is supported right now.")
-        return sd_cards
-
-    import json
-
-    powershell_script = """
-    Get-WmiObject Win32_DiskDrive | ForEach-Object {
-        $drive = $_
-        $partitions = ($drive | Get-WmiObject -Query "ASSOCIATORS OF {Win32_DiskDrive.DeviceID='$($drive.DeviceID)'} WHERE AssocClass = Win32_DiskDriveToDiskPartition")
-        foreach ($partition in $partitions) {
-            $logical = ($partition | Get-WmiObject -Query "ASSOCIATORS OF {Win32_DiskPartition.DeviceID='$($partition.DeviceID)'} WHERE AssocClass = Win32_LogicalDiskToPartition")
-            foreach ($l in $logical) {
-                [PSCustomObject]@{
-                    DriveLetter = $l.DeviceID
-                    Caption     = $drive.Caption
-                    MediaType   = $drive.MediaType
-                    Interface   = $drive.InterfaceType
-                }
-            }
-        }
-    } | ConvertTo-Json
-    """
-    output = run_powershell_command(powershell_script)
-
-    if output:
-        try:
-            entries = json.loads(output)
-            if isinstance(entries, dict):
-                entries = [entries]
-            for entry in entries:
-                caption = entry.get("Caption", "").lower()
-                media_type = entry.get("MediaType", "").lower()
-                if any(keyword in caption for keyword in ["sd", "secure digital"]) or \
-                   any(keyword in media_type for keyword in ["sd", "secure digital"]):
-                    drive_letter = entry.get("DriveLetter")
-                    if drive_letter:
-                        sd_cards.append(drive_letter)
-        except Exception as e:
-            print(Fore.RED + f"Failed to parse PowerShell output: {e}")
-
-    return sd_cards
-
 
 def run_powershell_command(command):
     try:
@@ -68,49 +22,76 @@ def run_powershell_command(command):
         print(f"PowerShell Error: {e.stderr}")
         return None
 
-def get_volume_label(drive_letter):
-    command = f"Get-Volume -DriveLetter {drive_letter[0]} | Select-Object -ExpandProperty FileSystemLabel"
-    return run_powershell_command(command)
+def detect_sd_cards():
+    """Detects and returns a list of SD card drive letters on Windows."""
+    if platform.system() != "Windows":
+        print("Only Windows SD card detection is supported right now.")
+        return []
+    sd_cards = []
+    powershell_script = """
+    Get-Volume | Where-Object DriveType -eq 'Removable' | Select-Object DriveLetter, FileSystemLabel, DriveType | ConvertTo-Json
+    """
+    output = run_powershell_command(powershell_script)
+
+    if output:
+        try:
+            entries = json.loads(output)
+            if not isinstance(entries, list):
+                entries = [entries]
+            
+            for entry in entries:
+                drive_letter = entry.get("DriveLetter")
+                if drive_letter:
+                    sd_cards.append(f"{drive_letter}:\\")
+        except json.JSONDecodeError as e:
+            print(Fore.RED + f"Failed to parse PowerShell output: {e}")
+
+    return sd_cards
 
 def is_wii_formatted(path):
-    existing = os.listdir(path)
+    """Checks if the given path contains the expected Wii directories."""
     for folder in EXPECTED_WII_DIRS:
-        if folder in existing:
-            return True
-    return False
+        full_path = os.path.join(path, folder)
+        if not os.path.isdir(full_path):
+            return False
+    return True
 
 def create_wii_folders(path):
+    """Creates the standard Wii folder structure at the specified path."""
+    print(Fore.YELLOW + "Creating Wii folder structure...")
     for folder in EXPECTED_WII_DIRS:
         full_path = os.path.join(path, folder)
         try:
             os.makedirs(full_path, exist_ok=True)
-            print(f"Created: {full_path}")
+            print(Fore.GREEN + f"Created: {full_path}")
         except Exception as e:
-            print(f"Failed to create {folder}: {e}")
+            print(Fore.RED + f"Failed to create {folder}: {e}")
 
 def check_and_setup_card(drive_path):
+    """Prompts the user to set up a Wii SD card if needed."""
     print(f"\nChecking structure on {drive_path}...")
+    
+    if not os.path.exists(drive_path):
+        print(Fore.RED + f"Drive path {drive_path} does not exist. Skipping.")
+        return
+
     if is_wii_formatted(drive_path):
-        print("SD card already contains expected Wii folders.")
+        print(Fore.GREEN + "SD card already contains the expected Wii folder structure.")
     else:
         print(Fore.YELLOW + "SD card does not appear to be Wii-formatted.")
-        user_input = print("Would you like to create the default Wii folder structure? (y/n): ").strip().lower()
+        user_input = input("Would you like to create the default Wii folder structure? (y/n): ").strip().lower()
         if user_input == 'y':
             create_wii_folders(drive_path)
             print(Fore.GREEN + "SD card is now Wii-ready!")
         else:
             print("Skipping setup for this drive.")
 
-    # SD card setup complete.
-
 if __name__ == "__main__":
     cards = detect_sd_cards()
     if cards:
-        for card in cards:
-            print(f"Found: {card}")
-            label = get_volume_label(card)
-            if label:
-                print(f"Label: {label}")
-                check_and_setup_card(card)
+        print(Fore.CYAN + "SD cards detected:")
+        for card_path in cards:
+            print(f"- {card_path}")
+            check_and_setup_card(card_path)
     else:
-        print(Fore.RED + "No SD cards detected... is your SD card inserted?")
+        print(Fore.RED + "No removable drives detected. Is your SD card inserted?")

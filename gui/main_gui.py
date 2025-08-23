@@ -46,7 +46,7 @@ def launch_gui(sd_cards=None):
             values=dropdown_values,
             width=300,
             height=50,
-            command=on_sd_selected
+            command=lambda: "fortnite burger"
         )
     dropdownMenu.grid(row=0, column=0, padx=20, pady=20, sticky="nw")
 
