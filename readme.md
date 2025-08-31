@@ -27,7 +27,7 @@ Made in Python
 
 ## Compatibility
 
-PiarWiiSD is compatible with all Wii models (RVL-001, RVL-101, even the 3 people using a modded Wii mini, but probably do that yourself) and is designed to work with SD cards formatted to FAT32. \
+PiarWiiSD is compatible with all Wii models (RVL-001, RVL-101, even the 3 people using a modded Wii mini, but probably do that yourself) and is designed to work with SD cards formatted to FAT32.
 
 PiarWiiSD is currently only intended to be run on Windows as of now. I am looking into porting to Linux/MacOS, but I would need to learn about SD card detection on those respective platforms.
 
@@ -40,4 +40,5 @@ PiarWiiSD is currently only intended to be run on Windows as of now. I am lookin
 ## Contributing
 
 If you'd like to contribute, please feel free to fork the repository and submit a pull request.
+
 
