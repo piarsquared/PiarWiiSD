@@ -32,13 +32,14 @@ PiarWiiSD is compatible with all Wii models (RVL-001, RVL-101, even the 3 people
 PiarWiiSD is currently only intended to be run on Windows as of now. I am looking into porting to Linux/MacOS, but I would need to learn about SD card detection on those respective platforms.
 
 > [!CAUTION]
-> Be sure that your SD card is formatted to FAT32 before installation. Note that this will delete ALL files currently on the SD card. That is why I will not provide tools to format your SD card.**
+> Be sure that your SD card is formatted to FAT32 before installation. Note that this will delete ALL files currently on the SD card. That is why I will not provide tools to format your SD card.
 
 ---
 
 ## Contributing
 
 If you'd like to contribute, please feel free to fork the repository and submit a pull request.
+
 
 
 
