@@ -41,14 +41,27 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gcc
       
-      - name: Build C++ backend
+      - name: Build C++ backend (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+         mkdir build
+          if (Test-Path src\*.cpp) {
+          g++ src\*.cpp -o build\windfall_backend.exe
+          } else {
+          Write-Host "No C++ files to compile, skipping."
+          }
+
+      - name: Build C++ backend (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
           mkdir -p build
           if ls src/*.cpp 1> /dev/null 2>&1; then
-          clang++ src/*.cpp -o build/windfall_backend
+          g++ src/*.cpp -o build/windfall_backend
           else
           echo "No C++ files to compile, skipping."
           fi
+
         
       - name: Package Python GUI
         run: |
