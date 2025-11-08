@@ -13,7 +13,7 @@ The project is a blend of C++/C and Python.
   <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/piarsquared/windfall/:workflow">
   <img alt="Platforms" src="https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macos-blue?style=for-the-badge">
   <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/piarsquared/windfall?style=for-the-badge">
-  <img alt="License" src="https://img.shields.io/github/license/piarsquared/windfall?style=for-the-badge">
+  <img alt="GitHub License" src="https://img.shields.io/github/license/piarsquared/windfall">
 </p>
 
 ---
@@ -87,3 +87,4 @@ Instructions (will vary per platform):
 - Python will pick it up automatically on launch
 
 Pull requests are welcome. Bug fixes, new features, and platform testing all help.
+
