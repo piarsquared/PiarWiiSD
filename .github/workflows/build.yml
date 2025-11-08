@@ -40,12 +40,16 @@ jobs:
       - name: Set up C++ compiler
         if: runner.os == 'macOS'
         run: brew install gcc
-
+      
       - name: Build C++ backend
         run: |
           mkdir -p build
-          g++ src/*.cpp -o build/windfall_backend
-
+          if ls src/*.cpp 1> /dev/null 2>&1; then
+          clang++ src/*.cpp -o build/windfall_backend
+          else
+          echo "No C++ files to compile, skipping."
+          fi
+        
       - name: Package Python GUI
         run: |
           pyinstaller --onefile --name Windfall main.py
